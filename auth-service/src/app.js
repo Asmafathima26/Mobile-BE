@@ -25,6 +25,16 @@ app.use(express.json());
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 
 // Routes
+app.get('/api', (req, res) => {
+    res.status(200).json({
+        success: true,
+        service: 'Auth Service',
+        message: 'Backend Auth Service is running',
+        version: 'v1',
+        status: 'healthy',
+        timestamp: new Date().toISOString()
+    });
+});
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
