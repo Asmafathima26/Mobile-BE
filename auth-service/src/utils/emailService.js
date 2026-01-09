@@ -8,13 +8,26 @@ const nodemailer = require('nodemailer');
 // Configure SMTP transport
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: false, // Use TLS
+  port: Number(process.env.SMTP_PORT),
+  secure: false,
+  requireTLS: true, 
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
+  },
+  tls: {
+    rejectUnauthorized: true
   }
 });
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('SMTP VERIFY FAILED:', error);
+  } else {
+    console.log('SMTP READY');
+  }
+});
+
+
 
 /**
  * Send email verification OTP

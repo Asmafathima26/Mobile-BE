@@ -9,6 +9,14 @@ const registerValidator = [
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters'),
+  body('firstName')
+    .trim()
+    .notEmpty()
+    .withMessage('First name is required'),
+  body('lastName')
+    .trim()
+    .notEmpty()
+    .withMessage('Last name is required'),
 ];
 
 const loginValidator = [

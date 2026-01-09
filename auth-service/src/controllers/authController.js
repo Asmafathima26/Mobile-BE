@@ -22,7 +22,7 @@ const register = async (req, res) => {
       });
     }
 
-    const { email, password } = req.body;
+    const { email, password, firstName, lastName } = req.body;
 
     // Get IP and user agent from request
     const { ipAddress, userAgent } = getRequestMetadata(req);
@@ -31,6 +31,8 @@ const register = async (req, res) => {
     const user = await authService.registerUser({
       email,
       password,
+      firstName,
+      lastName,
       ipAddress,
       userAgent
     });

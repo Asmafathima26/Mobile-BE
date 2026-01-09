@@ -8,7 +8,7 @@ const logger = require('../utils/logger');
 const { generateOTP, getOTPExpiration } = require('../utils/otpGenerator');
 const { sendVerificationOTP } = require('../utils/emailService');
 
-const registerUser = async ({ email, password, ipAddress, userAgent }) => {
+const registerUser = async ({ email, password, firstName, lastName, ipAddress, userAgent }) => {
   const existing = await User.findOne({ where: { email } });
   if (existing) {
     throw new Error(AUTH_MESSAGES.EMAIL_ALREADY_EXISTS);
@@ -17,6 +17,8 @@ const registerUser = async ({ email, password, ipAddress, userAgent }) => {
   const user = await User.create({
     id: crypto.randomUUID(),
     email,
+    first_name: firstName,
+    last_name: lastName,
     password_hash: passwordHash,
     email_verified: false,
     is_active: true,
@@ -148,6 +150,8 @@ const loginUser = async ({ email, password, ipAddress, userAgent }) => {
     user: {
       id: user.id,
       email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
       roles,
       email_verified: user.email_verified
     },
