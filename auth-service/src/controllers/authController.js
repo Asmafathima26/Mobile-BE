@@ -188,7 +188,7 @@ const forgotPassword = async (req, res) => {
 
     res.status(STATUS_CODES.OK).json({
       success: true,
-      message: AUTH_MESSAGES.RESET_OTP_SENT
+      message: AUTH_MESSAGES.RESET_LINK_SENT
     });
   } catch (error) {
     logger.error('Forgot password error:', error);
@@ -210,12 +210,12 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    const { email, otp, newPassword } = req.body;
+    const { email, token, newPassword } = req.body;
     const { ipAddress, userAgent } = getRequestMetadata(req);
 
     await authService.resetPassword({
       email,
-      otp,
+      token,
       newPassword,
       ipAddress,
       userAgent
@@ -230,7 +230,9 @@ const resetPassword = async (req, res) => {
 
     if ([
       AUTH_MESSAGES.INVALID_OTP,
-      AUTH_MESSAGES.OTP_EXPIRED
+      AUTH_MESSAGES.OTP_EXPIRED,
+      AUTH_MESSAGES.TOKEN_INVALID,
+      AUTH_MESSAGES.NOT_EXIST
     ].includes(error.message)) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
@@ -313,6 +315,59 @@ const resendOtp = async (req, res) => {
   }
 };
 
+const getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await authService.getUserProfile({ userId });
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: 'Profile fetched successfully',
+      data: user
+    });
+  } catch (error) {
+    logger.error('Get profile error:', error);
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: ERROR_MESSAGES.INTERNAL_ERROR
+    });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: ERROR_MESSAGES.VALIDATION_ERROR,
+        errors: errors.array()
+      });
+    }
+
+    const userId = req.user.id;
+    const { firstName, lastName } = req.body;
+
+    const user = await authService.updateUserProfile({
+      userId,
+      firstName,
+      lastName
+    });
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: user
+    });
+  } catch (error) {
+    logger.error('Update profile error:', error);
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: ERROR_MESSAGES.INTERNAL_ERROR
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -321,5 +376,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   verifyOtp,
-  resendOtp
+  resendOtp,
+  getProfile,
+  updateProfile
 };

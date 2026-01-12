@@ -29,5 +29,7 @@ router.post('/refresh-token', authValidator.refreshTokenValidator, authControlle
 
 // Protected routes
 router.post('/logout', authMiddleware, authController.logout);
+router.get('/profile', authMiddleware, authController.getProfile);
+router.put('/profile', authMiddleware, authValidator.updateProfileValidator, authController.updateProfile);
 
 module.exports = router;

@@ -11,6 +11,7 @@ const AUTH_MESSAGES = {
     ACCOUNT_BLOCKED: 'Your account has been blocked. Please contact support.',
     ACCOUNT_INACTIVE: 'Your account is inactive. Please contact support.',
     EMAIL_NOT_VERIFIED: 'Please verify your email before logging in',
+    NOT_EXIST: "User Not Exist",
 
     // Logout
     LOGOUT_SUCCESS: 'Logged out successfully',
@@ -32,6 +33,7 @@ const AUTH_MESSAGES = {
     // Password Reset
     RESET_OTP_SENT: 'Password reset OTP has been sent to your email',
     PASSWORD_RESET_SUCCESS: 'Password reset successfully. Please login with your new password.',
+    RESET_LINK_SENT:"Password reset Link has been sent to your email",
 
     // General
     OPERATION_SUCCESS: 'Operation completed successfully',

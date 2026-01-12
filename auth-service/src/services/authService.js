@@ -208,7 +208,7 @@ const refreshAccessToken = async ({ refreshToken }) => {
 };
 
 const forgotPassword = async ({ email, ipAddress, userAgent }) => {
-  const { sendPasswordResetOTP } = require('../utils/emailService');
+  const { sendPasswordResetLink } = require('../utils/emailService');
 
   const user = await User.findOne({ where: { email } });
 
@@ -217,23 +217,28 @@ const forgotPassword = async ({ email, ipAddress, userAgent }) => {
     return { sent: true };
   }
 
-  const otp = generateOTP();
+  // Generate secure token (hex string)
+  const token = crypto.randomBytes(32).toString('hex');
 
   await UserOtp.update(
     { is_verified: true },
     { where: { user_id: user.id, type: OTP_TYPES.PASSWORD_RESET, is_verified: false } }
   );
+
   await UserOtp.create({
     id: crypto.randomUUID(),
     user_id: user.id,
-    otp,
+    otp: token, // Store token in otp column
     type: OTP_TYPES.PASSWORD_RESET,
-    expires_at: getOTPExpiration(),
+    expires_at: getOTPExpiration(10), // 10 mins
     is_verified: false
   });
 
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+  const link = `${frontendUrl}/reset-password?token=${token}`;
+
   try {
-    await sendPasswordResetOTP(email, otp);
+    await sendPasswordResetLink(email, link);
   } catch (emailError) {
     logger.error('Email send error (Forgot Password):', emailError);
     throw new Error(AUTH_MESSAGES.EMAIL_ALREADY_EXISTS); // Reuse for email send failure
@@ -253,18 +258,18 @@ const forgotPassword = async ({ email, ipAddress, userAgent }) => {
   return { sent: true };
 };
 
-const resetPassword = async ({ email, otp, newPassword, ipAddress, userAgent }) => {
+const resetPassword = async ({ email, token, newPassword, ipAddress, userAgent }) => {
   // 1️⃣ Find user
   const user = await User.findOne({ where: { email } });
   if (!user) {
-    throw new Error(AUTH_MESSAGES.INVALID_OTP);
+    throw new Error(AUTH_MESSAGES.NOT_EXIST); // Check message constant
   }
 
-  // 2️⃣ Find and validate OTP
+  // 2️⃣ Find and validate Token
   const otpRecord = await UserOtp.findOne({
     where: {
       user_id: user.id,
-      otp,
+      otp: token,
       type: OTP_TYPES.PASSWORD_RESET,
       is_verified: false
     },
@@ -272,12 +277,13 @@ const resetPassword = async ({ email, otp, newPassword, ipAddress, userAgent }) 
   });
 
   if (!otpRecord) {
-    throw new Error(AUTH_MESSAGES.INVALID_OTP);
+    throw new Error(AUTH_MESSAGES.TOKEN_INVALID);
   }
 
-  // 3️⃣ Check if OTP is expired
+  // 3️⃣ Check if Token is expired
   if (new Date() > new Date(otpRecord.expires_at)) {
-    throw new Error(AUTH_MESSAGES.OTP_EXPIRED);
+    logger.error(`Token expired: Now=${new Date()}, Expires=${otpRecord.expires_at}`);
+    throw new Error(AUTH_MESSAGES.TOKEN_INVALID);
   }
 
   // 4️⃣ Hash new password
@@ -286,7 +292,7 @@ const resetPassword = async ({ email, otp, newPassword, ipAddress, userAgent }) 
   // 5️⃣ Update password
   await user.update({ password_hash: passwordHash });
 
-  // 6️⃣ Mark OTP as verified
+  // 6️⃣ Mark Token as verified
   await otpRecord.update({ is_verified: true });
 
   // 7️⃣ Revoke all refresh tokens for this user
@@ -401,6 +407,49 @@ const resendOtp = async ({ email, type = OTP_TYPES.EMAIL_VERIFY }) => {
   return { sent: true };
 };
 
+const getUserProfile = async ({ userId }) => {
+  const user = await User.findOne({
+    where: { id: userId },
+    include: [{
+      model: Role,
+      through: { attributes: [] },
+      attributes: ['name']
+    }]
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const roles = user.Roles ? user.Roles.map(r => r.name) : [];
+
+  return {
+    id: user.id,
+    email: user.email,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    roles,
+    email_verified: user.email_verified
+  };
+};
+
+const updateUserProfile = async ({ userId, firstName, lastName }) => {
+  const user = await User.findOne({ where: { id: userId } });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const updates = {};
+  if (firstName) updates.first_name = firstName;
+  if (lastName) updates.last_name = lastName;
+
+  await user.update(updates);
+
+  // Return updated profile
+  return getUserProfile({ userId });
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -409,5 +458,7 @@ module.exports = {
   forgotPassword,
   resetPassword,
   verifyOtp,
-  resendOtp
+  resendOtp,
+  getUserProfile,
+  updateUserProfile
 };

@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
   secure: false,
-  requireTLS: true, 
+  requireTLS: true,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
@@ -59,25 +59,27 @@ const sendVerificationOTP = async (email, otp) => {
 };
 
 /**
- * Send password reset OTP
+ * Send password reset Link
  * @param {string} email - Recipient email
- * @param {string} otp - OTP code
+ * @param {string} link - Reset link
  */
-const sendPasswordResetOTP = async (email, otp) => {
+const sendPasswordResetLink = async (email, link) => {
   const mailOptions = {
     from: `"Auth Service" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Password Reset - OTP',
+    subject: 'Password Reset Request',
     html: `
       <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Password Reset Request</h2>
         <p>We received a request to reset your password.</p>
-        <p>Your password reset OTP is:</p>
-        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
-          ${otp}
+        <p>Click the button below to reset your password:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${link}" style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
         </div>
-        <p>This OTP will expire in <strong>10 minutes</strong>.</p>
-        <p>If you didn't request a password reset, please ignore this email and your password will remain unchanged.</p>
+        <p>Or copy and paste this link in your browser:</p>
+        <p style="word-break: break-all; color: #007bff;">${link}</p>
+        <p>This link will expire in <strong>10 minutes</strong>.</p>
+        <p>If you didn't request a password reset, please ignore this email.</p>
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
         <p style="color: #666; font-size: 12px;">This is an automated email, please do not reply.</p>
       </div>
@@ -148,7 +150,7 @@ const sendAdminPasswordReset = async (email, tempPassword) => {
 
 module.exports = {
   sendVerificationOTP,
-  sendPasswordResetOTP,
+  sendPasswordResetLink,
   sendAccountStatusNotification,
   sendAdminPasswordReset
 };
