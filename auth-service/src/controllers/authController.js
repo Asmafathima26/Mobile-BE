@@ -368,6 +368,50 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const updatePassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: ERROR_MESSAGES.VALIDATION_ERROR,
+        errors: errors.array()
+      });
+    }
+
+    const userId = req.user.id;
+    const { oldPassword, newPassword } = req.body;
+    const { ipAddress, userAgent } = getRequestMetadata(req);
+
+    await authService.updatePassword({
+      userId,
+      oldPassword,
+      newPassword,
+      ipAddress,
+      userAgent
+    });
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: AUTH_MESSAGES.PASSWORD_UPDATE_SUCCESS
+    });
+  } catch (error) {
+    logger.error('Update password error:', error);
+
+    if (error.message === AUTH_MESSAGES.INCORRECT_OLD_PASSWORD) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: ERROR_MESSAGES.INTERNAL_ERROR
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -378,5 +422,6 @@ module.exports = {
   verifyOtp,
   resendOtp,
   getProfile,
-  updateProfile
+  updateProfile,
+  updatePassword
 };

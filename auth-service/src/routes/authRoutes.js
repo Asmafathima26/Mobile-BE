@@ -31,5 +31,6 @@ router.post('/refresh-token', authValidator.refreshTokenValidator, authControlle
 router.post('/logout', authMiddleware, authController.logout);
 router.get('/profile', authMiddleware, authController.getProfile);
 router.put('/profile', authMiddleware, authValidator.updateProfileValidator, authController.updateProfile);
+router.put('/update-password', authMiddleware, authValidator.updatePasswordValidator, authController.updatePassword);
 
 module.exports = router;

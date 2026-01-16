@@ -35,6 +35,10 @@ const AUTH_MESSAGES = {
     PASSWORD_RESET_SUCCESS: 'Password reset successfully. Please login with your new password.',
     RESET_LINK_SENT:"Password reset Link has been sent to your email",
 
+    // Password Update
+    PASSWORD_UPDATE_SUCCESS: 'Password updated successfully',
+    INCORRECT_OLD_PASSWORD: 'Current password is incorrect',
+
     // General
     OPERATION_SUCCESS: 'Operation completed successfully',
     VALIDATION_ERROR: 'Validation error'

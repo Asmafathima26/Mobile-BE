@@ -450,6 +450,59 @@ const updateUserProfile = async ({ userId, firstName, lastName }) => {
   return getUserProfile({ userId });
 };
 
+const updatePassword = async ({ userId, oldPassword, newPassword, ipAddress, userAgent }) => {
+  // 1️⃣ Find user with password hash
+  const user = await User.scope('withPassword').findOne({
+    where: { id: userId }
+  });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // 2️⃣ Verify old password
+  const isPasswordValid = await bcrypt.compare(oldPassword, user.password_hash);
+  if (!isPasswordValid) {
+    // Log failed attempt
+    await AuthLog.create({
+      id: crypto.randomUUID(),
+      user_id: user.id,
+      action: AUTH_ACTIONS.PASSWORD_CHANGE_FAILED,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      created_at: new Date(),
+      updated_at: new Date()
+    });
+    throw new Error(AUTH_MESSAGES.INCORRECT_OLD_PASSWORD);
+  }
+
+  // 3️⃣ Hash new password
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+
+  // 4️⃣ Update password
+  await user.update({ password_hash: passwordHash });
+
+  // 5️⃣ Revoke all refresh tokens for this user (security measure)
+  const { RefreshToken } = require('../models');
+  await RefreshToken.update(
+    { is_revoked: true },
+    { where: { user_id: user.id, is_revoked: false } }
+  );
+
+  // 6️⃣ Log successful password change
+  await AuthLog.create({
+    id: crypto.randomUUID(),
+    user_id: user.id,
+    action: AUTH_ACTIONS.PASSWORD_CHANGED,
+    ip_address: ipAddress,
+    user_agent: userAgent,
+    created_at: new Date(),
+    updated_at: new Date()
+  });
+
+  return true;
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -460,5 +513,6 @@ module.exports = {
   verifyOtp,
   resendOtp,
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  updatePassword
 };

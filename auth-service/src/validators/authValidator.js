@@ -90,6 +90,21 @@ const updateProfileValidator = [
     .withMessage('Last name cannot be empty'),
 ];
 
+const updatePasswordValidator = [
+  body('oldPassword')
+    .notEmpty()
+    .withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 8 })
+    .withMessage('New password must be at least 8 characters')
+    .custom((value, { req }) => {
+      if (value === req.body.oldPassword) {
+        throw new Error('New password must be different from current password');
+      }
+      return true;
+    }),
+];
+
 module.exports = {
   registerValidator,
   loginValidator,
@@ -98,5 +113,6 @@ module.exports = {
   verifyOtpValidator,
   resendOtpValidator,
   refreshTokenValidator,
-  updateProfileValidator
+  updateProfileValidator,
+  updatePasswordValidator
 };
