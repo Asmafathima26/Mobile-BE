@@ -234,7 +234,7 @@ const forgotPassword = async ({ email, ipAddress, userAgent }) => {
     is_verified: false
   });
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const link = `${frontendUrl}/reset-password?token=${token}`;
 
   try {
