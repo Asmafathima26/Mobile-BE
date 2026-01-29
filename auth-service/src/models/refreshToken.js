@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   RefreshToken.associate = models => {
-    RefreshToken.belongsTo(models.User, { foreignKey: 'user_id' });
+    RefreshToken.belongsTo(models.User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
   };
 
   return RefreshToken;

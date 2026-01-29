@@ -503,6 +503,17 @@ const updatePassword = async ({ userId, oldPassword, newPassword, ipAddress, use
   return true;
 };
 
+const deleteMyAccount = async ({ userId }) => {
+  const user = await User.findOne({ where: { id: userId } });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  await user.destroy();
+
+  return true;
+};
 module.exports = {
   registerUser,
   loginUser,
@@ -514,5 +525,6 @@ module.exports = {
   resendOtp,
   getUserProfile,
   updateUserProfile,
-  updatePassword
+  updatePassword,
+  deleteMyAccount
 };

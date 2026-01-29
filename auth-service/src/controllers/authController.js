@@ -412,6 +412,35 @@ const updatePassword = async (req, res) => {
   }
 };
 
+const deleteMyAccount = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: ERROR_MESSAGES.VALIDATION_ERROR,
+        errors: errors.array()
+      });
+    }
+
+    const userId = req.user.id;
+    const { ipAddress, userAgent } = getRequestMetadata(req);
+
+    await authService.deleteMyAccount({ userId, ipAddress, userAgent });
+
+    res.status(STATUS_CODES.OK).json({
+      success: true,
+      message: AUTH_MESSAGES.ACCOUNT_DELETED_SUCCESS
+    });
+  } catch (error) {
+    logger.error('Delete account error:', error);
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: ERROR_MESSAGES.INTERNAL_ERROR
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -423,5 +452,6 @@ module.exports = {
   resendOtp,
   getProfile,
   updateProfile,
-  updatePassword
+  updatePassword,
+  deleteMyAccount
 };

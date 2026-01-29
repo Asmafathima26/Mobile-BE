@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   AuthLog.associate = models => {
-    AuthLog.belongsTo(models.User, { foreignKey: 'user_id' });
+    AuthLog.belongsTo(models.User, { foreignKey: 'user_id', onDelete: 'CASCADE' });
   };
 
   return AuthLog;

@@ -16,6 +16,9 @@ const AUTH_MESSAGES = {
     // Logout
     LOGOUT_SUCCESS: 'Logged out successfully',
 
+    // Delete Account
+    ACCOUNT_DELETED_SUCCESS: 'Account deleted successfully',
+
     // Token
     TOKEN_REFRESHED: 'Access token refreshed successfully',
     INVALID_REFRESH_TOKEN: 'Invalid or expired refresh token',
@@ -33,7 +36,7 @@ const AUTH_MESSAGES = {
     // Password Reset
     RESET_OTP_SENT: 'Password reset OTP has been sent to your email',
     PASSWORD_RESET_SUCCESS: 'Password reset successfully. Please login with your new password.',
-    RESET_LINK_SENT:"Password reset Link has been sent to your email",
+    RESET_LINK_SENT: "Password reset Link has been sent to your email",
 
     // Password Update
     PASSWORD_UPDATE_SUCCESS: 'Password updated successfully',

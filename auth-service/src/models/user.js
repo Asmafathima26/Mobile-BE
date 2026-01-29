@@ -21,10 +21,10 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   User.associate = models => {
-    User.belongsToMany(models.Role, { through: models.UserRole, foreignKey: 'user_id' });
-    User.hasMany(models.RefreshToken, { foreignKey: 'user_id' });
-    User.hasMany(models.UserOtp, { foreignKey: 'user_id' });
-    User.hasMany(models.AuthLog, { foreignKey: 'user_id' });
+    User.belongsToMany(models.Role, { through: models.UserRole, foreignKey: 'user_id', onDelete: 'CASCADE' });
+    User.hasMany(models.RefreshToken, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+    User.hasMany(models.UserOtp, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+    User.hasMany(models.AuthLog, { foreignKey: 'user_id', onDelete: 'CASCADE' });
   };
 
   return User;
