@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
+const fs = require('fs');
 const logger = require('./utils/logger');
 
 const authRoutes = require('./routes/authRoutes');
@@ -37,6 +39,15 @@ app.get('/api', (req, res) => {
 });
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
+
+// Serve static files from the React app build folder if it exists
+const buildPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(buildPath)) {
+    app.use(express.static(buildPath));
+    app.get(/.*/, (req, res) => {
+        res.sendFile(path.join(buildPath, 'index.html'));
+    });
+}
 
 // Global Error Handler
 app.use((err, req, res, next) => {

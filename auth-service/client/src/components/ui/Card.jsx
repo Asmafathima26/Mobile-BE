@@ -5,7 +5,7 @@ const Card = ({ className, children, ...props }) => {
     return (
         <div
             className={cn(
-                'bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden',
+                'bg-white/70 backdrop-blur-md border border-slate-200 rounded-2xl shadow-sm overflow-hidden',
                 className
             )}
             {...props}

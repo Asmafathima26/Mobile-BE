@@ -234,8 +234,11 @@ const forgotPassword = async ({ email, ipAddress, userAgent }) => {
     is_verified: false
   });
 
+  const { generateResetToken } = require('../utils/jwt');
+  const jwtToken = generateResetToken({ email: user.email, otp: token });
+
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const link = `${frontendUrl}/reset-password?token=${token}`;
+  const link = `${frontendUrl}/reset-password?token=${jwtToken}`;
 
   try {
     await sendPasswordResetLink(email, link);
@@ -258,18 +261,28 @@ const forgotPassword = async ({ email, ipAddress, userAgent }) => {
   return { sent: true };
 };
 
-const resetPassword = async ({ email, token, newPassword, ipAddress, userAgent }) => {
+const resetPassword = async ({ token, newPassword, ipAddress, userAgent }) => {
+  const { verifyResetToken } = require('../utils/jwt');
+  let decoded;
+  try {
+    decoded = verifyResetToken(token);
+  } catch (error) {
+    throw new Error(AUTH_MESSAGES.TOKEN_INVALID);
+  }
+
+  const { email, otp } = decoded;
+
   // 1️⃣ Find user
   const user = await User.findOne({ where: { email } });
   if (!user) {
-    throw new Error(AUTH_MESSAGES.NOT_EXIST); // Check message constant
+    throw new Error(AUTH_MESSAGES.NOT_EXIST);
   }
 
   // 2️⃣ Find and validate Token
   const otpRecord = await UserOtp.findOne({
     where: {
       user_id: user.id,
-      otp: token,
+      otp: otp,
       type: OTP_TYPES.PASSWORD_RESET,
       is_verified: false
     },

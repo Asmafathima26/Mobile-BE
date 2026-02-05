@@ -8,7 +8,15 @@ const registerValidator = [
     .normalizeEmail(),
   body('password')
     .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters'),
+    .withMessage('Password must be at least 8 characters')
+    .matches(/[A-Z]/)
+    .withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/)
+    .withMessage('Password must contain at least one lowercase letter')
+    .matches(/[0-9]/)
+    .withMessage('Password must contain at least one number')
+    .matches(/[!@#$%^&*]/)
+    .withMessage('Password must contain at least one special character (!@#$%^&*)'),
   body('firstName')
     .trim()
     .notEmpty()
@@ -37,16 +45,20 @@ const forgotPasswordValidator = [
 ];
 
 const resetPasswordValidator = [
-  body('email')
-    .isEmail()
-    .withMessage('Valid email required')
-    .normalizeEmail(),
   body('token')
     .notEmpty()
     .withMessage('Token is required'),
   body('newPassword')
     .isLength({ min: 8 })
-    .withMessage('New password must be at least 8 characters'),
+    .withMessage('New password must be at least 8 characters')
+    .matches(/[A-Z]/)
+    .withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/)
+    .withMessage('Password must contain at least one lowercase letter')
+    .matches(/[0-9]/)
+    .withMessage('Password must contain at least one number')
+    .matches(/[!@#$%^&*]/)
+    .withMessage('Password must contain at least one special character (!@#$%^&*)'),
 ];
 
 const verifyOtpValidator = [
@@ -97,6 +109,14 @@ const updatePasswordValidator = [
   body('newPassword')
     .isLength({ min: 8 })
     .withMessage('New password must be at least 8 characters')
+    .matches(/[A-Z]/)
+    .withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/)
+    .withMessage('Password must contain at least one lowercase letter')
+    .matches(/[0-9]/)
+    .withMessage('Password must contain at least one number')
+    .matches(/[!@#$%^&*]/)
+    .withMessage('Password must contain at least one special character (!@#$%^&*)')
     .custom((value, { req }) => {
       if (value === req.body.oldPassword) {
         throw new Error('New password must be different from current password');

@@ -210,11 +210,10 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    const { email, token, newPassword } = req.body;
+    const { token, newPassword } = req.body;
     const { ipAddress, userAgent } = getRequestMetadata(req);
 
     await authService.resetPassword({
-      email,
       token,
       newPassword,
       ipAddress,
